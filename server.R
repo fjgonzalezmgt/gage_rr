@@ -1,22 +1,53 @@
-server <- function(input, output, session) {
-  as_display_table <- function(x) {
-    if (is.null(x)) {
-      return(NULL)
-    }
+ #' @title Logica del servidor para la aplicacion Gage R&R
+ #'
+ #' @description
+ #' Implementa el flujo reactivo de la aplicacion Shiny: carga de datos,
+ #' seleccion de columnas, ejecucion del analisis Gage R&R, generacion de
+ #' graficos y consulta opcional a OpenAI para interpretar resultados.
+ #'
+ #' @keywords internal
+ NULL
+ 
+ #' Logica del servidor principal de la aplicacion
+ #'
+ #' @param input Entradas reactivas de Shiny.
+ #' @param output Salidas reactivas de Shiny.
+ #' @param session Sesion activa de Shiny.
+ #'
+ #' @return No devuelve valor. Registra reactividad y salidas en la sesion.
+ #' @export
+ server <- function(input, output, session) {
+   #' Convierte resultados tabulares a un formato visible en Shiny
+   #'
+   #' @param x Objeto tabular o salida ANOVA.
+   #'
+   #' @return Un `data.frame` listo para `renderTable()` o `NULL`.
+   as_display_table <- function(x) {
+     if (is.null(x)) {
+       return(NULL)
+     }
 
     if (inherits(x, "summary.aov") && length(x) > 0) {
       x <- x[[1]]
     }
 
     df <- as.data.frame(x)
-    df <- cbind(Termino = rownames(df), df, row.names = NULL)
-    df
-  }
-
-  prepare_ss_rr_input <- function(df, measurement_cols, part_col, appr_col) {
-    measurement_cols <- unique(measurement_cols)
-
-    if (length(measurement_cols) == 1) {
+     df <- cbind(Termino = rownames(df), df, row.names = NULL)
+     df
+   }
+ 
+   #' Prepara una o varias columnas de medicion para `ss.rr`
+   #'
+   #' @param df `data.frame` fuente.
+   #' @param measurement_cols Nombres de columnas numericas de medicion.
+   #' @param part_col Nombre de la columna que identifica la pieza.
+   #' @param appr_col Nombre de la columna que identifica al evaluador.
+   #'
+   #' @return Una lista con datos preparados, nombre de variable y etiqueta.
+   prepare_ss_rr_input <- function(df, measurement_cols, part_col, appr_col) {
+     measurement_cols <- unique(measurement_cols)
+ 
+     if (length(measurement_cols) == 1) {
       return(list(
         data = df,
         var_name = measurement_cols[[1]],
@@ -44,14 +75,23 @@ server <- function(input, output, session) {
     list(
       data = stacked,
       var_name = ".gage_rr_value",
-      label = paste(measurement_cols, collapse = " + ")
-    )
-  }
-
-  run_ss_rr_for_var <- function(df, var_name, part_col, appr_col, print_plot = FALSE) {
-    if (!requireNamespace("SixSigma", quietly = TRUE)) {
-      stop(
-        paste(
+       label = paste(measurement_cols, collapse = " + ")
+     )
+   }
+ 
+   #' Ejecuta `ss.rr` para una variable de medicion preparada
+   #'
+   #' @param df `data.frame` listo para analisis.
+   #' @param var_name Nombre de la columna de medicion a usar.
+   #' @param part_col Nombre de la columna de pieza.
+   #' @param appr_col Nombre de la columna de evaluador.
+   #' @param print_plot Indica si debe renderizar el grafico.
+   #'
+   #' @return El objeto devuelto por `SixSigma::ss.rr`.
+   run_ss_rr_for_var <- function(df, var_name, part_col, appr_col, print_plot = FALSE) {
+     if (!requireNamespace("SixSigma", quietly = TRUE)) {
+       stop(
+         paste(
           "El paquete 'SixSigma' no esta instalado.",
           "Instalalo con install.packages('SixSigma')."
         ),
@@ -81,22 +121,31 @@ server <- function(input, output, session) {
       digits = input$digits,
       method = input$method,
       print_plot = print_plot,
-      signifstars = input$signif_stars
-    )
-  }
-
-  build_rr_plot <- function(path, width = 2400, height = 3200, res = 200) {
-    grDevices::png(filename = path, width = width, height = height, res = res)
-    on.exit(grDevices::dev.off(), add = TRUE)
-    prepared <- prepared_analysis_input()
+         signifstars = input$signif_stars
+       )
+   }
+ 
+   #' Genera el grafico Gage R&R en un archivo PNG
+   #'
+   #' @param path Ruta del archivo de salida.
+   #' @param width Ancho del PNG en pixeles.
+   #' @param height Alto del PNG en pixeles.
+   #' @param res Resolucion del PNG.
+   #'
+   #' @return Invisiblemente, la ruta del archivo generado.
+   build_rr_plot <- function(path, width = 2400, height = 3200, res = 200) {
+     grDevices::png(filename = path, width = width, height = height, res = res)
+     on.exit(grDevices::dev.off(), add = TRUE)
+     prepared <- prepared_analysis_input()
     run_ss_rr_for_var(
       df = prepared$data,
       var_name = prepared$var_name,
-      part_col = input$part_col,
-      appr_col = input$appr_col,
-      print_plot = TRUE
-    )
-  }
+       part_col = input$part_col,
+       appr_col = input$appr_col,
+       print_plot = TRUE
+     )
+     invisible(path)
+   }
 
   is_excel_file <- reactive({
     req(input$file)

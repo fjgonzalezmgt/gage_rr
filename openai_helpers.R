@@ -1,7 +1,22 @@
-sanitize_rr_result <- function(rr_result) {
-  list(
-    anovaTable = if (!is.null(rr_result$anovaTable) && length(rr_result$anovaTable) > 0) {
-      as.data.frame(rr_result$anovaTable[[1]])
+ #' @title Helpers para interpretar resultados con OpenAI
+ #'
+ #' @description
+ #' Reune utilidades para sanitizar resultados de Gage R&R, codificar imagenes
+ #' y construir solicitudes a la API de OpenAI para generar una interpretacion
+ #' ejecutiva del estudio.
+ #'
+ #' @keywords internal
+ NULL
+ 
+ #' Simplifica la salida de `ss.rr` para serializarla
+ #'
+ #' @param rr_result Resultado devuelto por `SixSigma::ss.rr`.
+ #'
+ #' @return Una lista con tablas convertidas a `data.frame` y campos escalares.
+ sanitize_rr_result <- function(rr_result) {
+   list(
+     anovaTable = if (!is.null(rr_result$anovaTable) && length(rr_result$anovaTable) > 0) {
+       as.data.frame(rr_result$anovaTable[[1]])
     } else {
       NULL
     },
@@ -12,14 +27,19 @@ sanitize_rr_result <- function(rr_result) {
     },
     varComp = if (!is.null(rr_result$varComp)) as.data.frame(rr_result$varComp) else NULL,
     studyVar = if (!is.null(rr_result$studyVar)) as.data.frame(rr_result$studyVar) else NULL,
-    ncat = rr_result$ncat
-  )
-}
-
-encode_image_data_url <- function(image_path) {
-  if (!requireNamespace("base64enc", quietly = TRUE)) {
-    stop("Falta instalar 'base64enc'. Usa install.packages('base64enc').", call. = FALSE)
-  }
+     ncat = rr_result$ncat
+   )
+ }
+ 
+ #' Convierte una imagen local a data URL en base64
+ #'
+ #' @param image_path Ruta del archivo de imagen.
+ #'
+ #' @return Una cadena en formato data URL lista para enviar a OpenAI.
+ encode_image_data_url <- function(image_path) {
+   if (!requireNamespace("base64enc", quietly = TRUE)) {
+     stop("Falta instalar 'base64enc'. Usa install.packages('base64enc').", call. = FALSE)
+   }
 
   ext <- tolower(tools::file_ext(image_path))
   mime_type <- switch(
@@ -35,14 +55,19 @@ encode_image_data_url <- function(image_path) {
     "data:",
     mime_type,
     ";base64,",
-    base64enc::base64encode(image_path)
-  )
-}
-
-extract_response_text <- function(body) {
-  if (!is.null(body$output_text) && is.character(body$output_text) && nzchar(body$output_text)) {
-    return(body$output_text)
-  }
+     base64enc::base64encode(image_path)
+   )
+ }
+ 
+ #' Extrae el texto util de una respuesta de la API Responses
+ #'
+ #' @param body Cuerpo de respuesta parseado como lista.
+ #'
+ #' @return Una cadena con el texto generado o `NULL` si no existe.
+ extract_response_text <- function(body) {
+   if (!is.null(body$output_text) && is.character(body$output_text) && nzchar(body$output_text)) {
+     return(body$output_text)
+   }
 
   if (!is.null(body$output) && length(body$output) > 0) {
     text_chunks <- unlist(
@@ -74,14 +99,24 @@ extract_response_text <- function(body) {
       return(paste(text_chunks, collapse = "\n\n"))
     }
   }
-
-  NULL
-}
-
-openai_interpret_rr <- function(rr_result, plot_path = NULL, language = "es", extra_instructions = "") {
-  if (!requireNamespace("httr2", quietly = TRUE)) {
-    stop("Falta instalar 'httr2'. Usa install.packages('httr2').", call. = FALSE)
-  }
+ 
+   NULL
+ }
+ 
+ #' Solicita a OpenAI una interpretacion del estudio Gage R&R
+ #'
+ #' @param rr_result Resultado devuelto por `SixSigma::ss.rr`.
+ #' @param plot_path Ruta opcional a una imagen PNG del grafico del estudio.
+ #' @param language Idioma en el que se solicita la respuesta.
+ #' @param extra_instructions Instrucciones adicionales para refinar la salida.
+ #'
+ #' @return Texto interpretativo generado por OpenAI o el cuerpo JSON
+ #'   serializado cuando no se puede extraer texto directo.
+ #' @export
+ openai_interpret_rr <- function(rr_result, plot_path = NULL, language = "es", extra_instructions = "") {
+   if (!requireNamespace("httr2", quietly = TRUE)) {
+     stop("Falta instalar 'httr2'. Usa install.packages('httr2').", call. = FALSE)
+   }
 
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     stop("Falta instalar 'jsonlite'. Usa install.packages('jsonlite').", call. = FALSE)

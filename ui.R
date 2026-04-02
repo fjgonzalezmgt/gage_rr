@@ -1,9 +1,27 @@
-library(shiny)
-library(bslib)
-
-ui <- page_sidebar(
-  title = "Gage R&R con SixSigma::ss.rr",
-  sidebar = sidebar(
+ #' @title Interfaz de usuario para la aplicacion Gage R&R
+ #'
+ #' @description
+ #' Define la interfaz Shiny basada en `bslib` para cargar archivos, configurar
+ #' el estudio Gage R&R, revisar tablas y graficos, y solicitar una
+ #' interpretacion automatizada del analisis.
+ #'
+ #' @keywords internal
+ NULL
+ 
+ library(shiny)
+ library(bslib)
+ 
+ #' Interfaz principal de la aplicacion Shiny
+ #'
+ #' @description
+ #' Objeto de interfaz que organiza la captura de parametros, la visualizacion
+ #' de resultados del estudio y el panel de interpretacion asistida.
+ #'
+ #' @format Un objeto `shiny.tag.list`.
+ #' @export
+ ui <- page_sidebar(
+   title = "Gage R&R con SixSigma::ss.rr",
+   sidebar = sidebar(
     width = 340,
     h4("Datos"),
     fileInput("file", "Archivo", accept = c(".csv", ".txt", ".xls", ".xlsx")),
