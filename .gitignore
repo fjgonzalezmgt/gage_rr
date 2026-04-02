@@ -26,3 +26,9 @@ Thumbs.db
 *~
 *.swp
 *.swo
+
+# Local secrets
+.Renviron
+
+# Editor settings
+.vscode/
