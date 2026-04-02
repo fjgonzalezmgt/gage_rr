@@ -172,6 +172,10 @@ OPENAI_API_KEY=tu_api_key
 OPENAI_MODEL=gpt-5-mini
 ```
 
+## Licencia
+
+Este proyecto se distribuye bajo la licencia Creative Commons Attribution 4.0 International (`CC BY 4.0`). Consulta [`LICENSE.md`](./LICENSE.md).
+
 ## Casos de uso
 
 - laboratorios o calidad que reciben datos en Excel y quieren evitar preparar scripts manuales
