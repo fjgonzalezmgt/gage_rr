@@ -100,6 +100,10 @@
       nav_panel(
         "Resultados",
         br(),
+        tags$div(
+          style = "margin-bottom: 1rem;",
+          downloadButton("download_excel", "Exportar resultados Excel")
+        ),
         verbatimTextOutput("analysis_log"),
         h4("ANOVA"),
         tableOutput("anova_table"),

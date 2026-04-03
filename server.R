@@ -405,6 +405,31 @@
     }
   )
 
+  output$download_excel <- downloadHandler(
+    filename = function() {
+      label <- gsub("[^A-Za-z0-9_-]+", "-", analysis_result()$label)
+      sprintf("gage-rr-%s-%s.xlsx", label, Sys.Date())
+    },
+    content = function(file) {
+      req(current_result())
+
+      plot_file <- tempfile(fileext = ".png")
+      build_rr_plot(plot_file)
+
+      interpretation_text <- NULL
+      if (isTruthy(input$run_interpretation) && input$run_interpretation > 0) {
+        interpretation_text <- interpretation_result()$text
+      }
+
+      write_rr_export_workbook(
+        path = file,
+        rr_result = current_result(),
+        plot_path = plot_file,
+        interpretation_text = interpretation_text
+      )
+    }
+  )
+
   output$interpretation_status <- renderText({
     req(current_result())
 
