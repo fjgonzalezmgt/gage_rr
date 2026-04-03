@@ -7,7 +7,7 @@
 ![OpenAI](https://img.shields.io/badge/AI-OpenAI-412991?logo=openai&logoColor=white)
 ![Excel](https://img.shields.io/badge/Input-Excel%20%2F%20CSV-217346?logo=microsoft-excel&logoColor=white)
 
-Aplicacion Shiny para ejecutar estudios Gage R&R con `SixSigma::ss.rr` a partir de archivos CSV o Excel, visualizar el resultado tecnico del estudio y generar una interpretacion ejecutiva opcional con OpenAI.
+Aplicacion Shiny para ejecutar estudios Gage R&R con `SixSigma::ss.rr` a partir de archivos CSV o Excel, visualizar el resultado tecnico del estudio, exportarlo a Excel y generar una interpretacion ejecutiva opcional con OpenAI.
 
 ## Que hace este proyecto
 
@@ -21,6 +21,7 @@ La app:
 - ejecuta el analisis ANOVA de `SixSigma::ss.rr`
 - muestra tablas de ANOVA, componentes de variacion, study variation y numero de categorias distintas
 - genera el grafico multipanel del estudio
+- exporta un archivo Excel con hojas separadas para ANOVA, grafico e interpretacion
 - puede enviar el resultado numerico y el grafico a OpenAI para obtener una interpretacion resumida
 
 En otras palabras, funciona como una capa de trabajo operativo sobre `SixSigma::ss.rr`, pensada para reducir friccion al analizar estudios Gage R&R desde archivos reales.
@@ -40,6 +41,7 @@ En otras palabras, funciona como una capa de trabajo operativo sobre `SixSigma::
    - resultados estadisticos
    - grafico
    - interpretacion opcional con OpenAI
+7. El usuario puede exportar un archivo Excel consolidado desde la pestana `Resultados`.
 
 ## Como trata multiples columnas de medicion
 
@@ -61,6 +63,7 @@ Este comportamiento es util cuando las columnas representan repeticiones compara
 - transformacion automatica de multiples columnas de medicion a un formato compatible con `ss.rr`
 - visualizacion de ANOVA, componentes de variacion, study variation y categorias distintas
 - exportacion del grafico Gage R&R en PNG
+- exportacion de resultados a Excel con hojas para ANOVA, grafico e interpretacion LLM
 - interpretacion opcional con OpenAI, solo bajo solicitud del usuario
 
 ## Que muestra el resultado
@@ -75,6 +78,10 @@ La app expone tanto la salida tecnica como una capa de lectura mas operativa.
 - study variation
 - numero de categorias distintas (`ncat`)
 - grafico Gage R&R en PNG
+- archivo Excel exportable con:
+  - hoja `ANOVA`
+  - hoja `Grafico`
+  - hoja `Interpretacion`
 
 ### Salida interpretativa
 
@@ -139,6 +146,7 @@ shiny::runApp()
 5. Ajusta los parametros del estudio.
 6. Pulsa `Ejecutar analisis`.
 7. Si quieres interpretacion con IA, abre la pestana `Interpretacion` y pulsa `Generar interpretacion`.
+8. Si quieres descargar el consolidado, abre la pestana `Resultados` y pulsa `Exportar resultados Excel`.
 
 ## Formato esperado de datos
 
