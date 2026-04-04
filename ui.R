@@ -19,9 +19,19 @@
  #'
  #' @format Un objeto `shiny.tag.list`.
  #' @export
- ui <- page_sidebar(
-   title = "Gage R&R con SixSigma::ss.rr",
-   sidebar = sidebar(
+ui <- page_sidebar(
+  title = "Gage R&R con SixSigma::ss.rr",
+  tags$head(
+    tags$style(HTML("
+      #rr_plot img {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
+    "))
+  ),
+  sidebar = sidebar(
     width = 340,
     h4("Datos"),
     fileInput("file", "Archivo", accept = c(".csv", ".txt", ".xls", ".xlsx")),
@@ -123,7 +133,7 @@
           style = "margin-bottom: 1rem;",
           downloadButton("download_plot", "Descargar grafico PNG")
         ),
-        imageOutput("rr_plot", width = "100%")
+        imageOutput("rr_plot", width = "100%", height = "auto")
       ),
       nav_panel(
         "Interpretacion",
