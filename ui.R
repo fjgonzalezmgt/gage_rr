@@ -29,6 +29,49 @@ ui <- page_sidebar(
         max-width: 100%;
         height: auto;
       }
+    ")),
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('copy-rr-plot', async function(message) {
+        const container = document.getElementById('rr_plot');
+        const img = container ? container.querySelector('img') : null;
+
+        if (!img || !img.src) {
+          Shiny.setInputValue('copy_plot_status', {
+            status: 'missing',
+            detail: 'No hay grafico disponible para copiar.',
+            nonce: Date.now()
+          }, { priority: 'event' });
+          return;
+        }
+
+        if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+          Shiny.setInputValue('copy_plot_status', {
+            status: 'unsupported',
+            detail: 'El navegador no permite copiar imagenes al portapapeles.',
+            nonce: Date.now()
+          }, { priority: 'event' });
+          return;
+        }
+
+        try {
+          const response = await fetch(img.src);
+          const blob = await response.blob();
+          await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type || 'image/png']: blob })
+          ]);
+          Shiny.setInputValue('copy_plot_status', {
+            status: 'success',
+            detail: 'Grafico copiado al portapapeles.',
+            nonce: Date.now()
+          }, { priority: 'event' });
+        } catch (error) {
+          Shiny.setInputValue('copy_plot_status', {
+            status: 'error',
+            detail: error && error.message ? error.message : 'No se pudo copiar el grafico.',
+            nonce: Date.now()
+          }, { priority: 'event' });
+        }
+      });
     "))
   ),
   sidebar = sidebar(
@@ -100,6 +143,10 @@ ui <- page_sidebar(
   card(
     full_screen = TRUE,
     uiOutput("active_measurement_control"),
+    tags$div(
+      style = "padding: 0 1rem 1rem 1rem;",
+      downloadButton("download_excel", "Exportar resultados Excel")
+    ),
     navset_card_tab(
       nav_panel(
         "Vista previa",
@@ -110,10 +157,6 @@ ui <- page_sidebar(
       nav_panel(
         "Resultados",
         br(),
-        tags$div(
-          style = "margin-bottom: 1rem;",
-          downloadButton("download_excel", "Exportar resultados Excel")
-        ),
         verbatimTextOutput("analysis_log"),
         h4("ANOVA"),
         tableOutput("anova_table"),
@@ -131,7 +174,7 @@ ui <- page_sidebar(
         br(),
         tags$div(
           style = "margin-bottom: 1rem;",
-          downloadButton("download_plot", "Descargar grafico PNG")
+          actionButton("copy_plot", "Copiar grafico al portapapeles")
         ),
         imageOutput("rr_plot", width = "100%", height = "auto")
       ),

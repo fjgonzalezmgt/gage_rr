@@ -395,15 +395,20 @@
     )
   }, deleteFile = TRUE)
 
-  output$download_plot <- downloadHandler(
-    filename = function() {
-      label <- gsub("[^A-Za-z0-9_-]+", "-", analysis_result()$label)
-      sprintf("gage-rr-%s-%s.png", label, Sys.Date())
-    },
-    content = function(file) {
-      build_rr_plot(file)
-    }
-  )
+  observeEvent(input$copy_plot, {
+    req(current_result())
+    session$sendCustomMessage("copy-rr-plot", list())
+  })
+
+  observeEvent(input$copy_plot_status, {
+    status <- input$copy_plot_status
+    req(is.list(status), !is.null(status$status), !is.null(status$detail))
+
+    showNotification(
+      status$detail,
+      type = if (identical(status$status, "success")) "message" else "error"
+    )
+  })
 
   output$download_excel <- downloadHandler(
     filename = function() {
